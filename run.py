@@ -1,6 +1,10 @@
+# 导入创建应用的函数
 from app import create_app
 
+# 创建 Flask 应用实例
 app = create_app()
 
+# 如果直接运行此文件
 if __name__ == '__main__':
+    # 启动服务器：监听所有IP、端口5000、开启调试模式
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -1,11 +1,17 @@
+<!-- HTML5 文档声明 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
+<!-- 页面头部：引入资源和配置 -->
 <head>
     <meta charset="UTF-8">
+    <!-- 引入 Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 移动端视口配置：禁止缩放，适配移动设备 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>注册 - AI闲鱼素材库</title>
+    <!-- 自定义样式 -->
     <style>
         .bg-glow {
             background: radial-gradient(circle at 50% 0%, #eff6ff 0%, #f9fafb 100%);
@@ -14,16 +20,21 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
+<!-- 页面主体 -->
 <body class="bg-glow antialiased text-gray-900 font-sans h-screen overflow-hidden">
 
+    <!-- 页面主容器：垂直居中布局 -->
     <div class="h-full flex flex-col items-center justify-center px-6">
         
+        <!-- 内容容器：限制最大宽度 -->
         <div class="w-full max-w-[380px] mx-auto flex flex-col">
             
+            <!-- 标题区域：显示应用名称和欢迎语 -->
             <header class="text-center mb-6">
                 <h1 class="text-2xl font-black tracking-tighter text-blue-600 mb-1">
                     AI闲鱼素材库
                 </h1>
+                <!-- 欢迎提示条 -->
                 <div class="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-100 rounded-full">
                     <span class="relative flex h-2 w-2 mr-2">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -33,49 +44,125 @@
                 </div>
             </header>
 
+            <!-- 消息闪现区域：显示成功或错误消息 -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-4 p-3 rounded-xl {% if category == 'success' %}bg-green-50 border border-green-200 text-green-700{% elif category == 'danger' %}bg-red-50 border border-red-200 text-red-700{% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %} text-sm">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- 表单容器：白色卡片样式 -->
             <main class="bg-white rounded-[2.5rem] shadow-2xl shadow-blue-500/10 border border-gray-100">
-                <form class="p-6 space-y-3">
+                <!-- 注册表单：POST 方法提交 -->
+                <form method="POST" class="p-6 space-y-3">
+                    <!-- CSRF 保护令牌 -->
+                    {{ form.hidden_tag() }}
                     
+                    <!-- 用户名字段：输入用户名，带图标，错误时显示红色样式 -->
                     <div class="relative group">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
                             <i class="fa-regular fa-user text-xs"></i>
                         </span>
-                        <input type="text" placeholder="用户名" 
-                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                        {% if form.username.errors %}
+                            {{ form.username(type="text", placeholder="用户名", 
+                                class="w-full pl-10 pr-4 py-3 bg-red-50 border border-red-300 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% else %}
+                            {{ form.username(type="text", placeholder="用户名", 
+                                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% endif %}
                     </div>
+                    <!-- 用户名错误提示 -->
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
 
+                    <!-- 邮箱字段：输入邮箱，带图标，错误时显示红色样式 -->
                     <div class="relative group">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
                             <i class="fa-regular fa-envelope text-xs"></i>
                         </span>
-                        <input type="email" placeholder="电子邮箱" 
-                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                        {% if form.email.errors %}
+                            {{ form.email(type="email", placeholder="电子邮箱", 
+                                class="w-full pl-10 pr-4 py-3 bg-red-50 border border-red-300 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% else %}
+                            {{ form.email(type="email", placeholder="电子邮箱", 
+                                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% endif %}
                     </div>
+                    <!-- 邮箱错误提示 -->
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
 
+                    <!-- 密码字段：输入密码，带图标，错误时显示红色样式 -->
                     <div class="relative group">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
                             <i class="fa-solid fa-lock text-xs"></i>
                         </span>
-                        <input type="password" placeholder="设置密码" 
-                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                        {% if form.password.errors %}
+                            {{ form.password(type="password", placeholder="设置密码", 
+                                class="w-full pl-10 pr-4 py-3 bg-red-50 border border-red-300 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% else %}
+                            {{ form.password(type="password", placeholder="设置密码", 
+                                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% endif %}
                     </div>
+                    <!-- 密码错误提示 -->
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
 
+                    <!-- 重复密码字段：确认密码，带图标，错误时显示红色样式 -->
                     <div class="relative group">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
                             <i class="fa-solid fa-check-double text-xs"></i>
                         </span>
-                        <input type="password" placeholder="重复密码" 
-                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                        {% if form.password2.errors %}
+                            {{ form.password2(type="password", placeholder="重复密码", 
+                                class="w-full pl-10 pr-4 py-3 bg-red-50 border border-red-300 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% else %}
+                            {{ form.password2(type="password", placeholder="重复密码", 
+                                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm") }}
+                        {% endif %}
                     </div>
+                    <!-- 重复密码错误提示 -->
+                    {% if form.password2.errors %}
+                        {% for error in form.password2.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
 
+                    <!-- 激活卡密字段：输入卡密，橙色主题，错误时显示红色样式 -->
                     <div class="relative group">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-orange-400">
                             <i class="fa-solid fa-key text-xs"></i>
                         </span>
-                        <input type="text" placeholder="激活卡密" 
-                            class="w-full pl-10 pr-4 py-3 bg-orange-50/50 border border-orange-100/50 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400 focus:bg-white outline-none transition-all text-sm placeholder:text-orange-300">
+                        {% if form.secret.errors %}
+                            {{ form.secret(type="text", placeholder="激活卡密", 
+                                class="w-full pl-10 pr-4 py-3 bg-red-50 border border-red-300 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:bg-white outline-none transition-all text-sm placeholder:text-red-300") }}
+                        {% else %}
+                            {{ form.secret(type="text", placeholder="激活卡密", 
+                                class="w-full pl-10 pr-4 py-3 bg-orange-50/50 border border-orange-100/50 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400 focus:bg-white outline-none transition-all text-sm placeholder:text-orange-300") }}
+                        {% endif %}
                     </div>
+                    <!-- 激活卡密错误提示 -->
+                    {% if form.secret.errors %}
+                        {% for error in form.secret.errors %}
+                            <p class="text-xs text-red-500 mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
 
+                    <!-- 提交按钮：蓝色主题，悬停效果 -->
                     <div class="pt-2">
                         <button type="submit" 
                             class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-all text-sm">
@@ -85,9 +172,10 @@
                 </form>
             </main>
 
+            <!-- 页脚区域：跳转到登录页 -->
             <footer class="mt-6 text-center text-xs">
                 <span class="text-gray-400">已有账号？</span>
-                <a href="#" class="text-blue-600 font-bold ml-1 hover:underline">立即登录</a>
+                <a href="{{ url_for('auth.login') }}" class="text-blue-600 font-bold ml-1 hover:underline">立即登录</a>
             </footer>
 
         </div>
