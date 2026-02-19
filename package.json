@@ -1,0 +1,16 @@
+{
+  "name": "my_flask_app",
+  "version": "1.0.0",
+  "description": "Flask app with Tailwind CSS",
+  "main": "app.py",
+  "scripts": {
+    "build": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css",
+    "watch": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

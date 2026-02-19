@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>注册 - AI闲鱼素材库</title>
+    <style>
+        .bg-glow {
+            background: radial-gradient(circle at 50% 0%, #eff6ff 0%, #f9fafb 100%);
+        }
+        /* 隐藏滚动条但保留功能（备选） */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-glow antialiased text-gray-900 font-sans h-screen overflow-hidden">
+
+    <div class="h-full flex flex-col items-center justify-center px-6">
+        
+        <div class="w-full max-w-[380px] mx-auto flex flex-col">
+            
+            <header class="text-center mb-6">
+                <h1 class="text-2xl font-black tracking-tighter text-blue-600 mb-1">
+                    AI闲鱼素材库
+                </h1>
+                <div class="inline-flex items-center px-3 py-1 bg-blue-50 border border-blue-100 rounded-full">
+                    <span class="relative flex h-2 w-2 mr-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    <p class="text-[11px] text-blue-700 font-medium">欢迎加入！填写下方信息，即刻解锁海量闲鱼爆款素材</p>
+                </div>
+            </header>
+
+            <main class="bg-white rounded-[2.5rem] shadow-2xl shadow-blue-500/10 border border-gray-100">
+                <form class="p-6 space-y-3">
+                    
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                            <i class="fa-regular fa-user text-xs"></i>
+                        </span>
+                        <input type="text" placeholder="用户名" 
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                    </div>
+
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                            <i class="fa-regular fa-envelope text-xs"></i>
+                        </span>
+                        <input type="email" placeholder="电子邮箱" 
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                    </div>
+
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </span>
+                        <input type="password" placeholder="设置密码" 
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                    </div>
+
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                            <i class="fa-solid fa-check-double text-xs"></i>
+                        </span>
+                        <input type="password" placeholder="重复密码" 
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm">
+                    </div>
+
+                    <div class="relative group">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-orange-400">
+                            <i class="fa-solid fa-key text-xs"></i>
+                        </span>
+                        <input type="text" placeholder="激活卡密" 
+                            class="w-full pl-10 pr-4 py-3 bg-orange-50/50 border border-orange-100/50 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400 focus:bg-white outline-none transition-all text-sm placeholder:text-orange-300">
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" 
+                            class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-all text-sm">
+                            立即注册
+                        </button>
+                    </div>
+                </form>
+            </main>
+
+            <footer class="mt-6 text-center text-xs">
+                <span class="text-gray-400">已有账号？</span>
+                <a href="#" class="text-blue-600 font-bold ml-1 hover:underline">立即登录</a>
+            </footer>
+
+        </div>
+    </div>
+
+</body>
+</html>
