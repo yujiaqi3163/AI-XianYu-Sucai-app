@@ -1,0 +1,221 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="px-4 py-6 space-y-6">
+    <!-- 顶部导航 -->
+    <div class="flex items-center gap-3">
+        <a href="javascript:history.back()" class="p-2 bg-white rounded-xl border border-gray-100 text-gray-400 active:scale-90 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        </a>
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">分类管理</h2>
+            <p class="text-[10px] text-gray-400 font-mono tracking-widest uppercase">Material Types</p>
+        </div>
+    </div>
+
+    <!-- 操作工具栏 -->
+    <div class="flex gap-2">
+        <button onclick="openModal()" class="flex-shrink-0 px-5 py-2.5 bg-gray-900 text-white rounded-2xl text-sm font-bold shadow-sm flex items-center gap-2 active:scale-95 transition-transform">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            添加分类
+        </button>
+    </div>
+
+    <!-- 分类列表 -->
+    <div class="space-y-3" id="material-types-list">
+        {% for material_type in material_types %}
+        <div class="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between" data-id="{{ material_type.id }}">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-gray-800">{{ material_type.name }}</h4>
+                    <p class="text-[10px] text-gray-400 mt-1">
+                        {{ material_type.description or '暂无描述' }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openModal({{ material_type.id }})" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                </button>
+                <button onclick="deleteMaterialType({{ material_type.id }})" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-white p-8 rounded-2xl border border-gray-100 text-center">
+            <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto text-gray-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </div>
+            <p class="text-sm text-gray-500 mt-3">暂无分类</p>
+            <p class="text-[10px] text-gray-400 mt-1">点击上方按钮添加第一个分类</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 弹窗遮罩 -->
+<div id="modal-overlay" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <!-- 弹窗内容 -->
+    <div id="modal-content" class="bg-white rounded-3xl w-full max-w-sm shadow-2xl animate-fade-in">
+        <!-- 弹窗头部 -->
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h3 id="modal-title" class="text-lg font-bold text-gray-900">添加分类</h3>
+            <button onclick="closeModal()" class="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        
+        <!-- 弹窗表单 -->
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-2">分类名称</label>
+                <input type="text" id="form-name" class="w-full px-4 py-3 bg-gray-50 rounded-2xl border-0 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="请输入分类名称">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 mb-2">分类描述</label>
+                <input type="text" id="form-description" class="w-full px-4 py-3 bg-gray-50 rounded-2xl border-0 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="请输入分类描述（可选）">
+            </div>
+        </div>
+        
+        <!-- 弹窗底部 -->
+        <div class="p-6 pt-0 flex gap-3">
+            <button onclick="closeModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-200 transition-colors">
+                取消
+            </button>
+            <button onclick="saveMaterialType()" class="flex-1 py-3 bg-blue-600 text-white rounded-2xl text-sm font-bold hover:bg-blue-700 transition-colors">
+                保存
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 提示框 -->
+<div id="toast" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] hidden">
+    <div class="bg-white shadow-lg rounded-lg border border-gray-100 px-6 py-4 flex items-center gap-3">
+        <div id="toast-dot" class="w-2 h-2 rounded-full bg-green-500"></div>
+        <p id="toast-message" class="text-sm font-medium text-gray-800"></p>
+    </div>
+</div>
+
+<script>
+let currentId = null;
+
+// 打开弹窗
+function openModal(id = null) {
+    currentId = id;
+    const modalTitle = document.getElementById('modal-title');
+    const formName = document.getElementById('form-name');
+    const formDescription = document.getElementById('form-description');
+    
+    if (id) {
+        modalTitle.textContent = '编辑分类';
+        fetch(`/admin/api/material-types/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    formName.value = data.data.name;
+                    formDescription.value = data.data.description || '';
+                }
+            });
+    } else {
+        modalTitle.textContent = '添加分类';
+        formName.value = '';
+        formDescription.value = '';
+    }
+    
+    document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+// 关闭弹窗
+function closeModal() {
+    currentId = null;
+    document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+// 显示提示
+function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    const toastDot = document.getElementById('toast-dot');
+    const toastMessage = document.getElementById('toast-message');
+    
+    toastDot.className = 'w-2 h-2 rounded-full ' + (isError ? 'bg-red-500' : 'bg-green-500');
+    toastMessage.textContent = message;
+    toast.classList.remove('hidden');
+    
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3000);
+}
+
+// 保存分类
+function saveMaterialType() {
+    const name = document.getElementById('form-name').value.trim();
+    const description = document.getElementById('form-description').value.trim();
+    
+    if (!name) {
+        showToast('请输入分类名称', true);
+        return;
+    }
+    
+    const url = currentId 
+        ? `/admin/api/material-types/${currentId}`
+        : '/admin/api/material-types';
+    const method = currentId ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, description })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            closeModal();
+            setTimeout(() => location.reload(), 500);
+        } else {
+            showToast(data.message, true);
+        }
+    })
+    .catch(err => {
+        showToast('操作失败，请重试', true);
+    });
+}
+
+// 删除分类
+function deleteMaterialType(id) {
+    if (!confirm('确定要删除这个分类吗？')) {
+        return;
+    }
+    
+    fetch(`/admin/api/material-types/${id}`, {
+        method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            setTimeout(() => location.reload(), 500);
+        } else {
+            showToast(data.message, true);
+        }
+    })
+    .catch(err => {
+        showToast('删除失败，请重试', true);
+    });
+}
+
+// 点击遮罩关闭弹窗
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="px-4 py-6 space-y-6">
+    
+    <!-- 1. 页面头部与搜索 -->
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-gray-900">素材库管理</h2>
+            <span class="text-xs text-gray-400">共 1,284 个素材</span>
+        </div>
+        
+        <div class="flex gap-2">
+            <div class="relative flex-grow">
+                <input type="text" placeholder="搜索素材名称或ID..." 
+                    class="w-full bg-white border border-gray-200 rounded-2xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-500/10 outline-none transition-all">
+                <div class="absolute left-3.5 top-3.5 text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </div>
+            </div>
+            <a href="{{ url_for('admin.material_add') }}" class="bg-gray-900 text-white p-3 rounded-2xl shadow-sm active:scale-95 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- 2. 分类筛选 (横向滚动) -->
+    <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+        <button class="flex-shrink-0 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-100">全部素材</button>
+        {% for material_type in material_types %}
+        <button class="flex-shrink-0 px-4 py-2 bg-white text-gray-500 border border-gray-100 rounded-xl text-xs font-medium">{{ material_type.name }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- 3. 素材列表 -->
+    <div class="grid grid-cols-1 gap-4">
+        
+        <!-- 素材项 1 (正常状态) -->
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden flex shadow-sm">
+            <div class="w-32 h-32 bg-gray-50 flex-shrink-0 relative">
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=300" class="w-full h-full object-cover">
+                <div class="absolute top-2 left-2 px-2 py-0.5 bg-green-500 text-white text-[8px] font-bold rounded-full uppercase">Active</div>
+            </div>
+            <div class="flex-grow p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-sm font-bold text-gray-800 line-clamp-1">极简智能手表展示图</h3>
+                        <span class="text-[10px] font-mono text-gray-300">#1024</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1">分类：数码配件 · 浏览：428</p>
+                </div>
+                
+                <div class="flex justify-end gap-2 mt-2">
+                    <button class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-blue-50 active:text-blue-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-red-50 active:text-red-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 素材项 2 (隐藏状态) -->
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden flex shadow-sm opacity-70">
+            <div class="w-32 h-32 bg-gray-100 flex-shrink-0 relative grayscale">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=300" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-white/40 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                </div>
+            </div>
+            <div class="flex-grow p-4 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-400 line-clamp-1 italic">经典红色运动鞋</h3>
+                    <p class="text-[10px] text-gray-400 mt-1">状态：已隐藏 · 下架于 05-18</p>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 text-[10px] font-bold">恢复上架</button>
+                    <button class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-red-50 active:text-red-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. 加载更多按钮 -->
+    <button class="w-full py-4 text-gray-400 text-xs font-medium">正在加载更多数据...</button>
+
+</div>
+{% endblock %}

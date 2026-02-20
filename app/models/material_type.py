@@ -15,10 +15,10 @@ class MaterialType(db.Model):
     name = db.Column(db.String(50), unique=True, nullable=False, index=True)
     # 类型描述，可选
     description = db.Column(db.String(200), nullable=True)
-    # 排序权重，数值越小越靠前
-    sort_order = db.Column(db.Integer, default=0, nullable=False)
-    # 是否启用，默认为是
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    # 排序（兼容旧数据库，默认值为0）
+    sort_order = db.Column(db.Integer, default=0, nullable=True)
+    # 是否启用（兼容旧数据库，默认值为True）
+    is_active = db.Column(db.Boolean, default=True, nullable=True)
     # 创建时间，默认为当前时间
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 

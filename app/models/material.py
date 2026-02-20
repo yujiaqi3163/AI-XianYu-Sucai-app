@@ -16,7 +16,7 @@ class Material(db.Model):
     # 素材文案，可选
     description = db.Column(db.Text, nullable=True)
     # 素材类型ID，外键
-    material_type_id = db.Column(db.Integer, db.ForeignKey('material_types.id'), nullable=False)
+    material_type_id = db.Column(db.Integer, db.ForeignKey('material_types.id'), nullable=True)
     # 浏览次数（热度），默认为0
     view_count = db.Column(db.Integer, default=0, nullable=False)
     # 收藏次数，默认为0

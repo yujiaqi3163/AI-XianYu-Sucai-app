@@ -20,21 +20,18 @@
     
     <!-- 1. 用户基本信息卡片 -->
     <section class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-        <!-- 头像 -->
         <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border-2 border-white shadow-sm overflow-hidden">
             <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
             </svg>
         </div>
-        <!-- 文字信息 -->
         <div class="flex-grow">
             <h2 class="text-xl font-bold text-gray-800">{{ current_user.username }}</h2>
             <p class="text-sm text-gray-400 mt-0.5">{{ current_user.email }}</p>
-            <div class="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md mt-2">
-                普通会员
+            <div class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-md mt-2 {% if current_user.is_super_admin %}bg-purple-50 text-purple-600{% elif current_user.is_admin %}bg-orange-50 text-orange-600{% else %}bg-blue-50 text-blue-600{% endif %}">
+                {% if current_user.is_super_admin %}超级管理员{% elif current_user.is_admin %}管理员{% else %}普通会员{% endif %}
             </div>
         </div>
-        <!-- 编辑按钮 -->
         <button class="text-gray-300">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -42,7 +39,7 @@
         </button>
     </section>
 
-    <!-- 2. 数据看板 (可选) -->
+    <!-- 2. 数据看板 -->
     <div class="grid grid-cols-3 gap-2 text-center">
         <div class="bg-white py-3 rounded-2xl border border-gray-50">
             <p class="text-lg font-black text-gray-800">128</p>
@@ -80,10 +77,29 @@
                 <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                 </div>
-                <span class="text-sm font-medium text-gray-700">安全设置 (修改密码)</span>
+                <span class="text-sm font-medium text-gray-700">安全设置</span>
             </div>
             <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
         </a>
+
+        {% if current_user.is_admin or current_user.is_super_admin %}
+        <!-- 管理后台 -->
+        <a href="{{ url_for('admin.index') }}" class="flex items-center justify-between px-5 py-4 active:bg-gray-50 transition-colors border-b border-gray-50">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <span class="text-sm font-medium text-gray-700">管理后台</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] text-red-500 px-1.5 py-0.5 bg-red-50 rounded">Admin</span>
+                <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </div>
+        </a>
+        {% endif %}
 
         <!-- 帮助中心 -->
         <a href="#" class="flex items-center justify-between px-5 py-4 active:bg-gray-50 transition-colors border-b border-gray-50">

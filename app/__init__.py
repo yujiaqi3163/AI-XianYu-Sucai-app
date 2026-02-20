@@ -18,6 +18,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
     # 关闭数据库修改跟踪
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # 禁用CSRF保护（临时，方便开发）
+    WTF_CSRF_ENABLED = False
 
 # 初始化数据库对象
 db = SQLAlchemy()
@@ -53,10 +55,14 @@ def create_app(config_class=Config):
     from app.routes import main_bp
     # 导入认证路由蓝图
     from app.routes.auth import auth_bp
+    # 导入管理后台路由蓝图
+    from app.routes import admin_bp
     # 注册主路由蓝图
     app.register_blueprint(main_bp)
     # 注册认证路由蓝图，前缀为 /auth
     app.register_blueprint(auth_bp, url_prefix='/auth')
+    # 注册管理后台路由蓝图，前缀为 /admin
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 
     # 返回应用实例
     return app

@@ -1,0 +1,139 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="px-4 py-6 space-y-6">
+
+    <!-- 1. 统计概览 -->
+    <div class="grid grid-cols-2 gap-4">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl p-5 text-white shadow-lg shadow-blue-100">
+            <p class="text-xs opacity-80">总素材数</p>
+            <h3 class="text-2xl font-black mt-1">1,284</h3>
+            <div class="mt-4 flex items-center gap-1 text-[10px] bg-white/20 w-fit px-2 py-0.5 rounded-full">
+                <span>今日 +12</span>
+            </div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl p-5 text-white shadow-lg shadow-purple-100">
+            <p class="text-xs opacity-80">未使用卡密</p>
+            <h3 class="text-2xl font-black mt-1">456</h3>
+            <div class="mt-4 flex items-center gap-1 text-[10px] bg-white/20 w-fit px-2 py-0.5 rounded-full">
+                <span>剩余 35%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 操作工具栏 -->
+     <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+        <a href="{{ url_for('admin.material_add') }}" class="flex-shrink-0 px-5 py-2.5 bg-gray-900 text-white rounded-2xl text-sm font-bold shadow-sm flex items-center gap-2 active:scale-95 transition-transform">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            添加新素材
+        </a>
+        <button class="flex-shrink-0 px-5 py-2.5 bg-white text-gray-700 border border-gray-100 rounded-2xl text-sm font-bold shadow-sm flex items-center gap-2 active:scale-95 transition-transform">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+            批量生成卡密
+        </button>
+        <!-- 新增：分类管理入口 -->
+        <a href="{{ url_for('admin.material_types') }}" class="flex-shrink-0 px-5 py-2.5 bg-purple-50 text-purple-600 border border-purple-100 rounded-2xl text-sm font-bold shadow-sm flex items-center gap-2 active:scale-95 transition-transform">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            分类管理
+        </a>
+    </div>
+
+    <!-- 3. 素材管理列表 (示例) -->
+    <section class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-gray-800">最新素材</h2>
+            <button class="text-sm text-blue-600 font-bold">全部</button>
+        </div>
+        
+        <div class="space-y-3">
+            <!-- 素材单项 -->
+            <div class="bg-white p-3 rounded-2xl border border-gray-100 flex items-center gap-3">
+                <div class="w-14 h-14 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=100" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-grow">
+                    <h4 class="text-sm font-bold text-gray-800 line-clamp-1">极简智能手表展示图</h4>
+                    <p class="text-[10px] text-gray-400 mt-1">分类：数码配件 · 2024-05-20</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-gray-100 flex items-center gap-3">
+                <div class="w-14 h-14 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 text-gray-300 flex items-center justify-center italic text-[10px]">
+                    No Img
+                </div>
+                <div class="flex-grow">
+                    <h4 class="text-sm font-bold text-gray-800 line-clamp-1">复古相机胶片滤镜素材</h4>
+                    <p class="text-[10px] text-gray-400 mt-1">分类：虚拟素材 · 2024-05-18</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 卡密管理预览 (示例) -->
+    <section class="space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-gray-800">近期生成卡密</h2>
+            <button class="text-sm text-blue-600 font-bold">查看全部</button>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-4 py-3 font-bold text-gray-600 text-xs text-center w-12">状态</th>
+                        <th class="px-2 py-3 font-bold text-gray-600 text-xs">卡密内容</th>
+                        <th class="px-4 py-3 font-bold text-gray-600 text-xs text-right">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    <tr>
+                        <td class="px-4 py-4 text-center">
+                            <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                        </td>
+                        <td class="px-2 py-4 font-mono text-xs text-gray-500">XY-9823-ASKL-01</td>
+                        <td class="px-4 py-4 text-right">
+                            <button class="text-red-500 text-xs font-bold">作废</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-4 text-center">
+                            <span class="inline-block w-2 h-2 rounded-full bg-gray-300"></span>
+                        </td>
+                        <td class="px-2 py-4 font-mono text-xs text-gray-300 line-through">XY-1102-PPQZ-88</td>
+                        <td class="px-4 py-4 text-right">
+                            <button class="text-gray-300 text-xs font-bold" disabled>已用</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<!-- 底部弹窗占位 (用于新增素材/卡密时弹出) -->
+<div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-end">
+    <div class="w-full bg-white rounded-t-[40px] p-8 space-y-6 transform translate-y-full transition-transform">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-2"></div>
+        <h3 class="text-xl font-bold text-center">添加新素材</h3>
+        <!-- 表单示例内容... -->
+        <button class="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl">确认保存</button>
+    </div>
+</div>
+{% endblock %}

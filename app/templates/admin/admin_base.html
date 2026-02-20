@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>管理后台 - AI 闲鱼素材库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen pb-28">
+
+    <!-- 顶部标题栏 (简化版：删除返回，专注标题) -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div class="flex flex-col">
+            <h1 class="text-lg font-black tracking-tight text-gray-900">系统管理中心</h1>
+            <p class="text-[9px] text-gray-400 font-mono uppercase tracking-widest">Management System</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            <div class="px-3 py-1 bg-gray-900 text-white text-[10px] font-bold rounded-lg shadow-sm">
+                ADMIN
+            </div>
+        </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="max-w-md mx-auto">
+        {% block admin_content %}{% endblock %}
+    </main>
+
+    <!-- 后台底部导航 (重构版：包含返回前台) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 px-2 py-3 flex justify-around items-center z-50 safe-area-bottom">
+        
+        <!-- 1. 返回前台 (新增：放置在首位) -->
+        <a href="/" class="flex flex-col items-center gap-1 group">
+            <div class="p-2 rounded-2xl group-active:scale-90 transition-all text-gray-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+            </div>
+            <span class="text-[10px] font-bold text-gray-400">返回前台</span>
+        </a>
+
+        <!-- 2. 控制台 -->
+        <a href="{{ url_for('admin.index') }}" class="flex flex-col items-center gap-1 group">
+            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.index' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <span class="text-[10px] {% if request.endpoint == 'admin.index' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">控制台</span>
+        </a>
+
+        <!-- 3. 素材库管理 -->
+        <a href="{{ url_for('admin.materials') }}" class="flex flex-col items-center gap-1 group">
+            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.materials' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+            </div>
+            <span class="text-[10px] {% if request.endpoint == 'admin.materials' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">素材库</span>
+        </a>
+
+        <!-- 4. 卡密管理 -->
+        <a href="{{ url_for('admin.secrets') }}" class="flex flex-col items-center gap-1 group">
+            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.secrets' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+            </div>
+            <span class="text-[10px] {% if request.endpoint == 'admin.secrets' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">卡密</span>
+        </a>
+
+        <!-- 5. 用户列表 -->
+        <a href="{{ url_for('admin.users') }}" class="flex flex-col items-center gap-1 group">
+            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.users' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </div>
+            <span class="text-[10px] {% if request.endpoint == 'admin.users' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">用户</span>
+        </a>
+    </nav>
+
+</body>
+</html>
