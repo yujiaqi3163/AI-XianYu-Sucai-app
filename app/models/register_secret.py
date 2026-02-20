@@ -21,6 +21,10 @@ class RegisterSecret(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     # 使用时间，可以为空
     used_at = db.Column(db.DateTime, nullable=True)
+    # 卡密时长类型: 1min-1分钟, 1day-日卡, 1month-月卡, 1year-年卡, permanent-永久
+    duration_type = db.Column(db.String(20), nullable=False, default='permanent')
+    # 过期时间（可选，只有有时长的卡密才有）
+    expires_at = db.Column(db.DateTime, nullable=True)
 
     # 打印时的显示格式
     def __repr__(self):

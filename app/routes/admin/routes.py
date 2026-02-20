@@ -8,7 +8,7 @@ from app import db
 from app.forms import MaterialForm
 from app.forms.material_type import MaterialTypeForm
 # 导入模型
-from app.models import Material, MaterialType, MaterialImage
+from app.models import Material, MaterialType, MaterialImage, RegisterSecret, User
 # 导入文件处理模块
 import os
 from werkzeug.utils import secure_filename
@@ -309,7 +309,174 @@ def material_edit(material_id):
 @login_required
 def secrets():
     """卡密管理页面"""
-    return render_template('admin/admin_secrets.html')
+    from datetime import datetime
+    now = datetime.utcnow()
+    
+    # 获取搜索关键词
+    search_keyword = request.args.get('search', '').strip()
+    
+    # 查询卡密
+    query = RegisterSecret.query
+    
+    if search_keyword:
+        # 搜索卡密文本 或 搜索关联用户的昵称
+        query = query.outerjoin(User).filter(
+            (RegisterSecret.secret.contains(search_keyword)) | 
+            (User.username.contains(search_keyword))
+        )
+    
+    # 按创建时间倒序
+    secrets = query.order_by(RegisterSecret.created_at.desc()).all()
+    
+    # 计算统计数据
+    total_count = RegisterSecret.query.count()
+    unused_count = RegisterSecret.query.filter_by(is_used=False).count()
+    released_count = RegisterSecret.query.filter_by(is_used=True, user_id=None).count()
+    
+    return render_template('admin/admin_secrets.html', secrets=secrets, total_count=total_count, unused_count=unused_count, released_count=released_count, now=now)
+
+
+@bp.route('/api/secrets', methods=['POST'])
+@login_required
+def api_create_secrets():
+    """批量生成卡密API"""
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'success': False, 'message': '请求数据不能为空'}), 400
+    
+    duration_type = data.get('duration_type', 'permanent')
+    count = data.get('count', 1)
+    
+    # 验证数量
+    try:
+        count = int(count)
+        if count < 1 or count > 100:
+            return jsonify({'success': False, 'message': '生成数量必须在1-100之间'}), 400
+    except ValueError:
+        return jsonify({'success': False, 'message': '生成数量必须是数字'}), 400
+    
+    # 验证时长类型
+    valid_types = ['1min', '1day', '1month', '1year', 'permanent']
+    if duration_type not in valid_types:
+        return jsonify({'success': False, 'message': '无效的时长类型'}), 400
+    
+    # 时长类型显示名称映射
+    duration_names = {
+        '1min': '1分钟卡',
+        '1day': '日卡(1天)',
+        '1month': '月卡(1个月)',
+        '1year': '年卡(1年)',
+        'permanent': '永久卡'
+    }
+    
+    from datetime import datetime, timedelta
+    import random
+    import string
+    
+    secrets = []
+    
+    # 定义字符集：数字+大小写字母
+    charset = string.digits + string.ascii_letters
+    
+    for _ in range(count):
+        # 生成唯一卡密：sk- + 18位随机数字+英文大小写
+        random_part = ''.join(random.choice(charset) for _ in range(18))
+        secret_str = f"sk-{random_part}"
+        
+        # 创建卡密（生成时不设置过期时间，使用时再计算）
+        secret = RegisterSecret(
+            secret=secret_str,
+            duration_type=duration_type,
+            expires_at=None
+        )
+        db.session.add(secret)
+        secrets.append(secret_str)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'成功生成 {count} 个{duration_names[duration_type]}',
+        'data': {
+            'secrets': secrets,
+            'duration_type': duration_type,
+            'duration_name': duration_names[duration_type],
+            'count': count
+        }
+    })
+
+
+@bp.route('/api/secrets/<int:secret_id>', methods=['DELETE'])
+@login_required
+def api_delete_secret(secret_id):
+    """删除卡密API"""
+    secret = RegisterSecret.query.get_or_404(secret_id)
+    
+    # 已使用的卡密不能删除，除非已释放（user_id=None）
+    if secret.is_used and secret.user_id is not None:
+        return jsonify({'success': False, 'message': '已使用且未释放的卡密不能删除'}), 400
+    
+    db.session.delete(secret)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': '卡密删除成功'
+    })
+
+
+@bp.route('/api/secrets/delete-released', methods=['POST'])
+@login_required
+def api_delete_released_secrets():
+    """批量删除已释放的卡密API"""
+    from datetime import datetime
+    now = datetime.utcnow()
+    
+    # 查询已释放的卡密（is_used=True 且 user_id=None）
+    released_secrets = RegisterSecret.query.filter(
+        RegisterSecret.is_used == True,
+        RegisterSecret.user_id == None
+    ).all()
+    
+    deleted_count = 0
+    for secret in released_secrets:
+        db.session.delete(secret)
+        deleted_count += 1
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': f'成功删除 {deleted_count} 个已释放的卡密',
+        'data': {
+            'deleted_count': deleted_count
+        }
+    })
+
+
+@bp.route('/api/secrets/<int:secret_id>/release', methods=['POST'])
+@login_required
+def api_release_secret(secret_id):
+    """释放卡密API"""
+    secret = RegisterSecret.query.get_or_404(secret_id)
+    
+    # 检查卡密是否已被使用且未释放
+    if not secret.is_used:
+        return jsonify({'success': False, 'message': '未使用的卡密不能释放'}), 400
+    
+    if secret.user_id is None:
+        return jsonify({'success': False, 'message': '该卡密已被释放'}), 400
+    
+    # 释放卡密：解除与用户的关联
+    secret.user_id = None
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': '卡密释放成功'
+    })
 
 
 @bp.route('/users')

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request  # 导入Flask相关模块
 from flask_login import login_user, logout_user, current_user  # 导入用户认证相关模块
-from datetime import datetime  # 导入日期时间模块
+from datetime import datetime, timedelta  # 导入日期时间模块
 from app import db  # 导入数据库实例
 from app.models import User, RegisterSecret  # 导入数据模型
 from app.forms import LoginForm, RegisterForm  # 导入表单类
@@ -54,6 +54,18 @@ def register():
         register_secret.is_used = True  # 标记卡密已使用
         register_secret.user_id = user.id  # 关联用户ID
         register_secret.used_at = datetime.utcnow()  # 记录使用时间
+        
+        # 根据卡密时长类型计算过期时间
+        expires_at = None
+        if register_secret.duration_type == '1min':
+            expires_at = register_secret.used_at + timedelta(minutes=1)
+        elif register_secret.duration_type == '1day':
+            expires_at = register_secret.used_at + timedelta(days=1)
+        elif register_secret.duration_type == '1month':
+            expires_at = register_secret.used_at + timedelta(days=30)
+        elif register_secret.duration_type == '1year':
+            expires_at = register_secret.used_at + timedelta(days=365)
+        register_secret.expires_at = expires_at
         
         db.session.commit()  # 提交到数据库
         
