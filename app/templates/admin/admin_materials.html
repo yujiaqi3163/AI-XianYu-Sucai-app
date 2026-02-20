@@ -7,12 +7,12 @@
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-gray-900">素材库管理</h2>
-            <span class="text-xs text-gray-400">共 1,284 个素材</span>
+            <span class="text-xs text-gray-400" id="total-count">共 {{ total_count }} 个素材</span>
         </div>
         
         <div class="flex gap-2">
             <div class="relative flex-grow">
-                <input type="text" placeholder="搜索素材名称或ID..." 
+                <input type="text" id="search-input" placeholder="搜索素材名称..." 
                     class="w-full bg-white border border-gray-200 rounded-2xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-500/10 outline-none transition-all">
                 <div class="absolute left-3.5 top-3.5 text-gray-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -26,67 +26,369 @@
 
     <!-- 2. 分类筛选 (横向滚动) -->
     <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
-        <button class="flex-shrink-0 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-100">全部素材</button>
+        <button class="flex-shrink-0 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-100 category-btn active" data-type-id="" onclick="handleCategoryClick('')">全部素材</button>
         {% for material_type in material_types %}
-        <button class="flex-shrink-0 px-4 py-2 bg-white text-gray-500 border border-gray-100 rounded-xl text-xs font-medium">{{ material_type.name }}</button>
+        <button class="flex-shrink-0 px-4 py-2 bg-white text-gray-500 border border-gray-100 rounded-xl text-xs font-medium category-btn" data-type-id="{{ material_type.id }}" onclick="handleCategoryClick('{{ material_type.id }}')">{{ material_type.name }}</button>
         {% endfor %}
     </div>
 
     <!-- 3. 素材列表 -->
-    <div class="grid grid-cols-1 gap-4">
+    <div class="grid grid-cols-1 gap-4" id="materials-container">
         
-        <!-- 素材项 1 (正常状态) -->
-        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden flex shadow-sm">
-            <div class="w-32 h-32 bg-gray-50 flex-shrink-0 relative">
-                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=300" class="w-full h-full object-cover">
-                <div class="absolute top-2 left-2 px-2 py-0.5 bg-green-500 text-white text-[8px] font-bold rounded-full uppercase">Active</div>
-            </div>
-            <div class="flex-grow p-4 flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-start">
-                        <h3 class="text-sm font-bold text-gray-800 line-clamp-1">极简智能手表展示图</h3>
-                        <span class="text-[10px] font-mono text-gray-300">#1024</span>
-                    </div>
-                    <p class="text-[10px] text-gray-400 mt-1">分类：数码配件 · 浏览：428</p>
+        {% if materials %}
+            {% for material in materials %}
+            <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm h-36 flex material-card {% if not material.is_published %}opacity-70{% endif %}" data-id="{{ material.id }}">
+                <div class="w-36 h-full bg-gray-50 flex-shrink-0 relative overflow-hidden rounded-l-3xl">
+                    {% set cover_image = material.images|selectattr('is_cover')|first %}
+                    {% if cover_image %}
+                        <img src="{{ cover_image.image_url }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 0 002-2V6a2 0 00-2-2H6a2 2 0 002 2z" /></svg>
+                        </div>
+                    {% endif %}
+                    {% if material.is_published %}
+                        <div class="absolute top-2 left-2 px-2 py-0.5 bg-green-500 text-white text-[8px] font-bold rounded-full uppercase">已上架</div>
+                    {% else %}
+                        <div class="absolute top-2 left-2 px-2 py-0.5 bg-gray-400 text-white text-[8px] font-bold rounded-full uppercase">未上架</div>
+                    {% endif %}
                 </div>
                 
-                <div class="flex justify-end gap-2 mt-2">
-                    <button class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-blue-50 active:text-blue-600 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    </button>
-                    <button class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-red-50 active:text-red-600 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
+                <div class="flex-grow p-4 flex flex-col justify-between min-w-0">
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-sm font-bold text-gray-800 line-clamp-1">{{ material.title }}</h3>
+                            <span class="text-[10px] font-mono text-gray-300">#{{ material.id }}</span>
+                        </div>
+                        
+                        <p class="text-[10px] text-gray-400 mt-1">
+                            分类：{{ material.material_type.name if material.material_type else '未分类' }}
+                        </p>
+                        
+                        {% if material.description %}
+                            <p class="text-xs text-gray-500 mt-1 line-clamp-1">
+                                {{ material.description }}
+                            </p>
+                        {% endif %}
+                        
+                        <div class="flex gap-3 mt-2">
+                            <span class="text-[10px] text-gray-400 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                {{ material.view_count }}
+                            </span>
+                            <span class="text-[10px] text-gray-400 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                {{ material.favorite_count }}
+                            </span>
+                            <span class="text-[10px] text-gray-400 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                {{ material.download_count }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end gap-2 mt-2">
+                        <a href="{{ url_for('admin.material_edit', material_id=material.id) }}" class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-blue-50 active:text-blue-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </a>
+                        <button onclick="deleteMaterial({{ material.id }}, this)" class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-red-50 active:text-red-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1 1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- 素材项 2 (隐藏状态) -->
-        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden flex shadow-sm opacity-70">
-            <div class="w-32 h-32 bg-gray-100 flex-shrink-0 relative grayscale">
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=300" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-white/40 flex items-center justify-center">
-                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+            {% endfor %}
+        {% else %}
+            <div class="bg-white p-8 rounded-3xl border border-gray-100 text-center" id="empty-state">
+                <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 0 002-2V6a2 0 00-2-2H6a2 2 0 002 2z" /></svg>
                 </div>
+                <p class="text-sm text-gray-500 mt-3">暂无素材</p>
+                <p class="text-[10px] text-gray-400 mt-1">点击右上角按钮添加第一个素材</p>
             </div>
-            <div class="flex-grow p-4 flex flex-col justify-between">
-                <div>
-                    <h3 class="text-sm font-bold text-gray-400 line-clamp-1 italic">经典红色运动鞋</h3>
-                    <p class="text-[10px] text-gray-400 mt-1">状态：已隐藏 · 下架于 05-18</p>
-                </div>
-                <div class="flex justify-end gap-2 mt-2">
-                    <button class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 text-[10px] font-bold">恢复上架</button>
-                    <button class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-red-50 active:text-red-600 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
+        {% endif %}
 
     </div>
 
-    <!-- 4. 加载更多按钮 -->
-    <button class="w-full py-4 text-gray-400 text-xs font-medium">正在加载更多数据...</button>
+    <div id="loading-state" class="hidden w-full py-4 text-center">
+        <div class="inline-flex items-center gap-2 text-gray-400 text-xs">
+            <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            加载中...
+        </div>
+    </div>
+    
+    <div id="no-more-state" class="hidden w-full py-4 text-gray-400 text-xs font-medium text-center">
+        没有更多数据了
+    </div>
 
 </div>
+
+<script>
+window.currentPage = 1;
+window.isLoading = false;
+window.hasMore = {{ 'true' if total_count > 10 else 'false' }};
+window.perPage = 10;
+window.currentTypeId = '';
+window.currentSearch = '';
+window.searchTimeout = null;
+
+function deleteMaterial(materialId, buttonElement) {
+    if (!confirm('确定要删除这个素材吗？删除后无法恢复！')) {
+        return;
+    }
+    
+    fetch(`/admin/api/materials/${materialId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const card = buttonElement.closest('.material-card');
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(-100%)';
+                card.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    card.remove();
+                    const countSpan = document.getElementById('total-count');
+                    if (countSpan) {
+                        const currentCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
+                        countSpan.textContent = `共 ${currentCount - 1} 个素材`;
+                    }
+                }, 300);
+            }
+        } else {
+            alert('删除失败：' + (data.message || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('删除素材出错:', error);
+        alert('删除失败，请稍后重试');
+    });
+}
+
+function createMaterialCard(material) {
+    const statusClass = material.is_published ? 'bg-green-500' : 'bg-gray-400';
+    const statusText = material.is_published ? '已上架' : '未上架';
+    const opacityClass = material.is_published ? '' : 'opacity-70';
+    
+    let coverImgHtml = '';
+    if (material.cover_image_url) {
+        coverImgHtml = `<img src="${material.cover_image_url}" class="w-full h-full object-cover">`;
+    } else {
+        coverImgHtml = `
+            <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 0 002-2V6a2 0 00-2-2H6a2 2 0 002 2z" /></svg>
+            </div>
+        `;
+    }
+    
+    let descriptionHtml = '';
+    if (material.description) {
+        descriptionHtml = `<p class="text-xs text-gray-500 mt-1 line-clamp-1">${material.description}</p>`;
+    }
+    
+    return `
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm h-36 flex material-card ${opacityClass}" data-id="${material.id}">
+            <div class="w-36 h-full bg-gray-50 flex-shrink-0 relative overflow-hidden rounded-l-3xl">
+                ${coverImgHtml}
+                <div class="absolute top-2 left-2 px-2 py-0.5 ${statusClass} text-white text-[8px] font-bold rounded-full uppercase">${statusText}</div>
+            </div>
+            <div class="flex-grow p-4 flex flex-col justify-between min-w-0">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-sm font-bold text-gray-800 line-clamp-1">${material.title}</h3>
+                        <span class="text-[10px] font-mono text-gray-300">#${material.id}</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1">分类：${material.material_type}</p>
+                    ${descriptionHtml}
+                    <div class="flex gap-3 mt-2">
+                        <span class="text-[10px] text-gray-400 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            ${material.view_count}
+                        </span>
+                        <span class="text-[10px] text-gray-400 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                            ${material.favorite_count}
+                        </span>
+                        <span class="text-[10px] text-gray-400 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            ${material.download_count}
+                        </span>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <a href="/admin/materials/edit/${material.id}" class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-blue-50 active:text-blue-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </a>
+                    <button onclick="deleteMaterial(${material.id}, this)" class="p-2 rounded-xl bg-gray-50 text-gray-400 active:bg-red-50 active:text-red-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1 1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function loadMoreMaterials() {
+    if (window.isLoading || !window.hasMore) return;
+    
+    window.isLoading = true;
+    window.currentPage++;
+    
+    const loadingState = document.getElementById('loading-state');
+    const noMoreState = document.getElementById('no-more-state');
+    
+    loadingState.classList.remove('hidden');
+    noMoreState.classList.add('hidden');
+    
+    let url = `/admin/api/materials?page=${window.currentPage}&per_page=${window.perPage}`;
+    if (window.currentTypeId && window.currentTypeId !== '') {
+        url += `&material_type_id=${window.currentTypeId}`;
+    }
+    if (window.currentSearch && window.currentSearch !== '') {
+        url += `&search=${encodeURIComponent(window.currentSearch)}`;
+    }
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.getElementById('materials-container');
+                
+                data.data.forEach(material => {
+                    const cardHtml = createMaterialCard(material);
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                });
+                
+                window.hasMore = data.pagination.has_more;
+                
+                if (!window.hasMore) {
+                    noMoreState.classList.remove('hidden');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('加载素材出错:', error);
+        })
+        .finally(() => {
+            window.isLoading = false;
+            loadingState.classList.add('hidden');
+        });
+}
+
+function loadMaterials(typeId, searchKeyword) {
+    window.currentTypeId = typeId;
+    window.currentSearch = searchKeyword;
+    window.currentPage = 1;
+    
+    const container = document.getElementById('materials-container');
+    const loadingState = document.getElementById('loading-state');
+    const noMoreState = document.getElementById('no-more-state');
+    const totalCountSpan = document.getElementById('total-count');
+    
+    loadingState.classList.remove('hidden');
+    noMoreState.classList.add('hidden');
+    
+    let url = `/admin/api/materials?page=1&per_page=${window.perPage}`;
+    if (typeId && typeId !== '') {
+        url += `&material_type_id=${typeId}`;
+    }
+    if (searchKeyword && searchKeyword !== '') {
+        url += `&search=${encodeURIComponent(searchKeyword)}`;
+    }
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                container.innerHTML = '';
+                
+                if (data.data.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white p-8 rounded-3xl border border-gray-100 text-center">
+                            <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto text-gray-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 0 002-2V6a2 0 00-2-2H6a2 2 0 002 2z" /></svg>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-3">暂无素材</p>
+                        </div>
+                    `;
+                } else {
+                    data.data.forEach(material => {
+                        const cardHtml = createMaterialCard(material);
+                        container.insertAdjacentHTML('beforeend', cardHtml);
+                    });
+                }
+                
+                totalCountSpan.textContent = `共 ${data.pagination.total} 个素材`;
+                window.hasMore = data.pagination.has_more;
+                
+                if (!window.hasMore && data.data.length > 0) {
+                    noMoreState.classList.remove('hidden');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('加载素材出错:', error);
+        })
+        .finally(() => {
+            loadingState.classList.add('hidden');
+        });
+}
+
+function loadMaterialsByType(typeId) {
+    loadMaterials(typeId, window.currentSearch);
+}
+
+function updateCategoryButtons(activeTypeId) {
+    const buttons = document.querySelectorAll('.category-btn');
+    buttons.forEach(btn => {
+        const typeId = btn.dataset.typeId;
+        
+        if (typeId === activeTypeId) {
+            btn.classList.remove('bg-white', 'text-gray-500', 'border', 'border-gray-100');
+            btn.classList.add('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-100', 'active');
+        } else {
+            btn.classList.remove('bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-100', 'active');
+            btn.classList.add('bg-white', 'text-gray-500', 'border', 'border-gray-100');
+        }
+    });
+}
+
+function handleCategoryClick(typeId) {
+    updateCategoryButtons(typeId);
+    loadMaterialsByType(typeId);
+}
+
+function handleSearchInput() {
+    const searchInput = document.getElementById('search-input');
+    const keyword = searchInput.value.trim();
+    
+    if (window.searchTimeout) {
+        clearTimeout(window.searchTimeout);
+    }
+    
+    window.searchTimeout = setTimeout(() => {
+        loadMaterials(window.currentTypeId, keyword);
+    }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', handleSearchInput);
+    
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+        
+        if (scrollTop + clientHeight >= scrollHeight - 500) {
+            loadMoreMaterials();
+        }
+    });
+});
+</script>
 {% endblock %}

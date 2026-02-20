@@ -6,86 +6,88 @@
     <title>管理后台 - AI 闲鱼素材库</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* 页面平滑载入动画 */
+        .page-fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen pb-28">
 
-    <!-- 顶部标题栏 (简化版：删除返回，专注标题) -->
-    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div class="flex flex-col">
-            <h1 class="text-lg font-black tracking-tight text-gray-900">系统管理中心</h1>
-            <p class="text-[9px] text-gray-400 font-mono uppercase tracking-widest">Management System</p>
-        </div>
-        <div class="flex items-center gap-2">
-            <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
-            <div class="px-3 py-1 bg-gray-900 text-white text-[10px] font-bold rounded-lg shadow-sm">
-                ADMIN
+    <!-- 1. 顶部标题栏 (日间高亮) -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-5 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+            <!-- 运行状态指示 -->
+            <div class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
             </div>
+            <div>
+                <h1 class="text-sm font-black tracking-tight text-gray-900 uppercase">Admin Console</h1>
+                <p class="text-[8px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-0.5">Management System</p>
+            </div>
+        </div>
+        
+        <!-- 管理员标识 -->
+        <div class="flex items-center gap-2 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+            <span class="text-[9px] font-black text-blue-600 uppercase tracking-tighter">Root Manager</span>
         </div>
     </header>
 
-    <!-- 主体内容 -->
-    <main class="max-w-md mx-auto">
+    <!-- 2. 主体内容 -->
+    <main class="max-w-md mx-auto page-fade-in">
         {% block admin_content %}{% endblock %}
     </main>
 
-    <!-- 后台底部导航 (重构版：包含返回前台) -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 px-2 py-3 flex justify-around items-center z-50 safe-area-bottom">
+    <!-- 3. 底部导航栏 (白色胶囊设计 - 对齐主页风格) -->
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[94%] max-w-sm bg-white/90 backdrop-blur-2xl rounded-[32px] px-2 py-2 flex justify-around items-center z-50 shadow-xl shadow-gray-200/60 border border-white/60 safe-area-bottom">
         
-        <!-- 1. 返回前台 (新增：放置在首位) -->
-        <a href="/" class="flex flex-col items-center gap-1 group">
-            <div class="p-2 rounded-2xl group-active:scale-90 transition-all text-gray-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-            </div>
-            <span class="text-[10px] font-bold text-gray-400">返回前台</span>
+        <!-- 返回前台 -->
+        <a href="/" class="flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all active:scale-90 text-gray-400 hover:text-blue-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span class="text-[9px] font-bold mt-0.5">网站首页</span>
         </a>
 
-        <!-- 2. 控制台 -->
-        <a href="{{ url_for('admin.index') }}" class="flex flex-col items-center gap-1 group">
-            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.index' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-            </div>
-            <span class="text-[10px] {% if request.endpoint == 'admin.index' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">控制台</span>
+        <!-- 控制台 (当前页) -->
+        <a href="{{ url_for('admin.index') }}" class="flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all active:scale-90 {% if request.endpoint == 'admin.index' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+            </svg>
+            <span class="text-[9px] font-black mt-0.5">数据统计</span>
         </a>
 
-        <!-- 3. 素材库管理 -->
-        <a href="{{ url_for('admin.materials') }}" class="flex flex-col items-center gap-1 group">
-            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.materials' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-            </div>
-            <span class="text-[10px] {% if request.endpoint == 'admin.materials' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">素材库</span>
+        <!-- 素材管理 -->
+        <a href="{{ url_for('admin.materials') }}" class="flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all active:scale-90 {% if request.endpoint == 'admin.materials' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-[9px] font-black mt-0.5">素材管理</span>
         </a>
 
-        <!-- 4. 卡密管理 -->
-        <a href="{{ url_for('admin.secrets') }}" class="flex flex-col items-center gap-1 group">
-            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.secrets' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-            </div>
-            <span class="text-[10px] {% if request.endpoint == 'admin.secrets' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">卡密</span>
+        <!-- 卡密管理 -->
+        <a href="{{ url_for('admin.secrets') }}" class="flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all active:scale-90 {% if request.endpoint == 'admin.secrets' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
+            <span class="text-[9px] font-black mt-0.5">卡密管理</span>
         </a>
 
-        <!-- 5. 用户列表 -->
-        <a href="{{ url_for('admin.users') }}" class="flex flex-col items-center gap-1 group">
-            <div class="p-2 rounded-2xl group-active:scale-90 transition-all {% if request.endpoint == 'admin.users' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            </div>
-            <span class="text-[10px] {% if request.endpoint == 'admin.users' %}font-black text-blue-600{% else %}font-bold text-gray-400{% endif %}">用户</span>
+        <!-- 用户列表 -->
+        <a href="{{ url_for('admin.users') }}" class="flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all active:scale-90 {% if request.endpoint == 'admin.users' %}text-blue-600 bg-blue-50{% else %}text-gray-400{% endif %}">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span class="text-[9px] font-black mt-0.5">用户管理</span>
         </a>
     </nav>
 

@@ -4,19 +4,37 @@
 <div class="px-4 py-6 space-y-6">
 
     <!-- 1. 统计概览 -->
-    <div class="grid grid-cols-2 gap-4">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl p-5 text-white shadow-lg shadow-blue-100">
-            <p class="text-xs opacity-80">总素材数</p>
-            <h3 class="text-2xl font-black mt-1">1,284</h3>
-            <div class="mt-4 flex items-center gap-1 text-[10px] bg-white/20 w-fit px-2 py-0.5 rounded-full">
-                <span>今日 +12</span>
+    <div class="grid grid-cols-3 gap-2">
+        <!-- 总素材数 -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 text-white shadow-lg shadow-blue-100 flex flex-col justify-between">
+            <div>
+                <p class="text-[10px] opacity-80 font-medium">总素材数</p>
+                <h3 class="text-lg font-black mt-0.5">1,284</h3>
+            </div>
+            <div class="mt-2 text-[9px] bg-white/20 w-fit px-1.5 py-0.5 rounded-md">
+                今日 +12
             </div>
         </div>
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl p-5 text-white shadow-lg shadow-purple-100">
-            <p class="text-xs opacity-80">未使用卡密</p>
-            <h3 class="text-2xl font-black mt-1">456</h3>
-            <div class="mt-4 flex items-center gap-1 text-[10px] bg-white/20 w-fit px-2 py-0.5 rounded-full">
-                <span>剩余 35%</span>
+
+        <!-- 未使用卡密 -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-3 text-white shadow-lg shadow-purple-100 flex flex-col justify-between">
+            <div>
+                <p class="text-[10px] opacity-80 font-medium">未使用卡密</p>
+                <h3 class="text-lg font-black mt-0.5">456</h3>
+            </div>
+            <div class="mt-2 text-[9px] bg-white/20 w-fit px-1.5 py-0.5 rounded-md">
+                剩余 35%
+            </div>
+        </div>
+
+        <!-- 用户总数 - 新增方块 -->
+        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-3 text-white shadow-lg shadow-emerald-100 flex flex-col justify-between">
+            <div>
+                <p class="text-[10px] opacity-80 font-medium">用户总数</p>
+                <h3 class="text-lg font-black mt-0.5">892</h3>
+            </div>
+            <div class="mt-2 text-[9px] bg-white/20 w-fit px-1.5 py-0.5 rounded-md">
+                活跃 +5
             </div>
         </div>
     </div>

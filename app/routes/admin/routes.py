@@ -45,6 +45,7 @@ def save_image(file):
 @bp.route('/')
 @login_required
 def index():
+    """管理后台首页"""
     material_types = MaterialType.query.order_by(MaterialType.created_at.desc()).all()
     return render_template('admin/admin_index.html', material_types=material_types)
 
@@ -52,8 +53,77 @@ def index():
 @bp.route('/materials')
 @login_required
 def materials():
+    """素材库管理页面"""
     material_types = MaterialType.query.order_by(MaterialType.created_at.desc()).all()
-    return render_template('admin/admin_materials.html', material_types=material_types)
+    # 第一次只加载10个素材
+    materials = Material.query.order_by(Material.created_at.desc()).limit(10).all()
+    total_count = Material.query.count()
+    return render_template('admin/admin_materials.html', material_types=material_types, materials=materials, total_count=total_count)
+
+
+@bp.route('/api/materials')
+@login_required
+def api_get_materials():
+    """分页获取素材API"""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    
+    # 获取分类ID，处理空字符串的情况
+    material_type_id_str = request.args.get('material_type_id', '')
+    material_type_id = None
+    if material_type_id_str and material_type_id_str.strip() != '':
+        try:
+            material_type_id = int(material_type_id_str)
+        except (ValueError, TypeError):
+            material_type_id = None
+    
+    # 获取搜索关键词
+    search_keyword = request.args.get('search', '').strip()
+    
+    # 计算偏移量
+    offset = (page - 1) * per_page
+    
+    # 查询素材
+    query = Material.query
+    if material_type_id is not None:
+        query = query.filter_by(material_type_id=material_type_id)
+    
+    # 添加搜索条件（按标题搜索）
+    if search_keyword:
+        query = query.filter(Material.title.contains(search_keyword))
+    
+    materials = query.order_by(Material.created_at.desc()).offset(offset).limit(per_page).all()
+    total_count = query.count()
+    
+    # 构建返回数据
+    material_list = []
+    for material in materials:
+        # 获取封面图
+        cover_image = next((img for img in material.images if img.is_cover), None)
+        
+        material_list.append({
+            'id': material.id,
+            'title': material.title,
+            'description': material.description,
+            'material_type': material.material_type.name if material.material_type else '未分类',
+            'view_count': material.view_count,
+            'favorite_count': material.favorite_count,
+            'download_count': material.download_count,
+            'is_published': material.is_published,
+            'cover_image_url': cover_image.image_url if cover_image else None,
+            'created_at': material.created_at.strftime('%Y-%m-%d %H:%M:%S') if material.created_at else None
+        })
+    
+    return jsonify({
+        'success': True,
+        'data': material_list,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'has_more': (page * per_page) < total_count
+        }
+    })
 
 
 @bp.route('/materials/add', methods=['GET', 'POST'])
@@ -135,15 +205,117 @@ def material_add():
     return render_template('admin/admin_material_add.html', form=form)
 
 
+@bp.route('/materials/edit/<int:material_id>', methods=['GET', 'POST'])
+@login_required
+def material_edit(material_id):
+    # 获取素材
+    material = Material.query.get_or_404(material_id)
+    
+    # 创建表单实例并填充数据
+    form = MaterialForm(obj=material)
+    
+    # 填充素材类型选择框
+    material_types = MaterialType.query.all()
+    form.material_type_id.choices = [(t.id, t.name) for t in material_types]
+    
+    # 显式查询图片以确保正确获取
+    all_images = MaterialImage.query.filter_by(material_id=material_id).order_by(MaterialImage.sort_order).all()
+    cover_image = next((img for img in all_images if img.is_cover), None)
+    other_images = [img for img in all_images if not img.is_cover]
+    
+    # 如果是POST请求
+    if form.validate_on_submit():
+        # 更新素材基本信息
+        material.title = form.title.data
+        material.description = form.description.data
+        material.material_type_id = form.material_type_id.data
+        material.is_published = form.is_published.data
+        
+        # 处理封面图
+        if 'cover_image' in request.files:
+            cover_file = request.files['cover_image']
+            if cover_file and cover_file.filename:
+                # 删除旧封面图
+                if cover_image:
+                    old_path = os.path.join(current_app.root_path, cover_image.image_url.lstrip('/'))
+                    if os.path.exists(old_path):
+                        try:
+                            os.remove(old_path)
+                        except:
+                            pass
+                    db.session.delete(cover_image)
+                
+                # 保存新封面图
+                new_cover_path = save_image(cover_file)
+                new_cover = MaterialImage(
+                    material_id=material.id,
+                    image_url=new_cover_path,
+                    is_cover=True,
+                    sort_order=0
+                )
+                db.session.add(new_cover)
+        
+        # 处理要删除的现有图片（通过checkbox）
+        for img in other_images:
+            keep_key = f'keep_image_{img.id}'
+            if keep_key not in request.form:
+                # 没有勾选，删除这个图片
+                img_path = os.path.join(current_app.root_path, img.image_url.lstrip('/'))
+                if os.path.exists(img_path):
+                    try:
+                        os.remove(img_path)
+                    except:
+                        pass
+                db.session.delete(img)
+        
+        # 处理新增的其他图片
+        if 'other_images' in request.files:
+            other_files = request.files.getlist('other_images')
+            
+            # 重新查询剩余的图片来获取最大排序
+            remaining_images = MaterialImage.query.filter_by(material_id=material_id, is_cover=False).all()
+            current_max_sort = max([img.sort_order for img in remaining_images], default=0)
+            
+            for idx, file in enumerate(other_files):
+                if file and file.filename:
+                    saved_path = save_image(file)
+                    if saved_path:
+                        new_img = MaterialImage(
+                            material_id=material.id,
+                            image_url=saved_path,
+                            is_cover=False,
+                            sort_order=current_max_sort + idx + 1
+                        )
+                        db.session.add(new_img)
+        
+        # 提交到数据库
+        db.session.commit()
+        
+        # 提示成功
+        flash('素材更新成功！', 'success')
+        
+        # 跳转到素材列表
+        return redirect(url_for('admin.materials'))
+    
+    # GET请求，渲染表单
+    return render_template('admin/admin_material_add.html', 
+                           form=form, 
+                           material=material, 
+                           cover_image=cover_image, 
+                           other_images=other_images)
+
+
 @bp.route('/secrets')
 @login_required
 def secrets():
+    """卡密管理页面"""
     return render_template('admin/admin_secrets.html')
 
 
 @bp.route('/users')
 @login_required
 def users():
+    """用户列表管理页面"""
     return render_template('admin/admin_users.html')
 
 
@@ -256,4 +428,31 @@ def api_delete_material_type(type_id):
     return jsonify({
         'success': True,
         'message': '分类删除成功'
+    })
+
+
+@bp.route('/api/materials/<int:material_id>', methods=['DELETE'])
+@login_required
+def api_delete_material(material_id):
+    """删除素材API"""
+    material = Material.query.get_or_404(material_id)
+    
+    # 删除关联的图片文件
+    for img in material.images:
+        if img.image_url:
+            # 构建完整文件路径
+            file_path = os.path.join(current_app.root_path, img.image_url.lstrip('/'))
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
+    
+    # 删除素材（级联删除关联图片）
+    db.session.delete(material)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': '素材删除成功'
     })
