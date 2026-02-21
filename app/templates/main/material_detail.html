@@ -95,28 +95,20 @@
 
     <!-- 5. 下载操作面板 -->
     <div class="px-4 space-y-4 pt-2">
-        <div class="grid grid-cols-2 gap-4">
-            <!-- 普通下载 -->
-            <button class="group flex flex-col items-center justify-center gap-1 bg-gray-50 border border-gray-200 py-4 rounded-[28px] active:bg-gray-100 transition-all">
-                <span class="text-sm font-black text-gray-800">普通下载</span>
-                <span class="text-[9px] text-gray-400 font-medium">CSS混合 + MD5去重</span>
-            </button>
-
-            <!-- 高级下载 -->
-            <button class="relative overflow-hidden group flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-600 to-indigo-700 py-4 rounded-[28px] shadow-lg shadow-blue-200 active:scale-95 transition-all">
-                <!-- 装饰光晕 -->
-                <div class="absolute -top-10 -right-10 w-20 h-20 bg-white/20 blur-2xl rounded-full group-hover:scale-150 transition-transform"></div>
-                
-                <span class="text-sm font-black text-white flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2L14.4 9.6H22L15.8 14.2L18.2 21.8L12 17.2L5.8 21.8L8.2 14.2L2 9.6H9.6L12 2Z" />
-                    </svg>
-                    高级 AI 下载
-                </span>
-                <span class="text-[9px] text-white/70 font-medium">图生图深度二创</span>
-            </button>
-        </div>
-        <p class="text-center text-[10px] text-gray-400 font-medium">高级下载将消耗 1 点积分，生成结果将自动保存至作品库</p>
+        <!-- 高级AI下载 -->
+        <button class="relative overflow-hidden group flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-blue-600 to-indigo-700 py-4 rounded-[28px] shadow-lg shadow-blue-200 active:scale-95 transition-all w-full">
+            <!-- 装饰光晕 -->
+            <div class="absolute -top-10 -right-10 w-20 h-20 bg-white/20 blur-2xl rounded-full group-hover:scale-150 transition-transform"></div>
+            
+            <span class="text-sm font-black text-white flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L14.4 9.6H22L15.8 14.2L18.2 21.8L12 17.2L5.8 21.8L8.2 14.2L2 9.6H9.6L12 2Z" />
+                </svg>
+                高级 AI 下载
+            </span>
+            <span class="text-[9px] text-white/70 font-medium">图生图深度二创</span>
+        </button>
+        <p class="text-center text-[10px] text-gray-400 font-medium">生成结果将自动保存至作品库</p>
     </div>
 
 </div>
