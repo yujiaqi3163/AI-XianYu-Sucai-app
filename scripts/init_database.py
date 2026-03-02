@@ -267,8 +267,10 @@ def create_sample_data():
         ]
         
         created_count = 0
+        reset_count = 0
         for admin_info in super_admins:
-            if not User.query.filter_by(username=admin_info['username']).first():
+            admin = User.query.filter_by(username=admin_info['username']).first()
+            if not admin:
                 admin = User(
                     username=admin_info['username'],
                     email=admin_info['email'],
@@ -279,15 +281,25 @@ def create_sample_data():
                 db.session.add(admin)
                 print(f'  ✅ 创建超级管理员: {admin_info["username"]}')
                 created_count += 1
+            else:
+                # 如果管理员已存在，重置设备绑定和会话信息
+                if admin.bound_device_id or admin.session_token:
+                    admin.bound_device_id = None
+                    admin.session_token = None
+                    admin.device_unbind_status = 0
+                    admin.device_unbind_requested_at = None
+                    print(f'  🔄 重置管理员设备信息: {admin_info["username"]}')
+                    reset_count += 1
         
-        if created_count > 0:
-            db.session.commit()
-            print(f'  ✅ 共创建 {created_count} 个超级管理员')
+        db.session.commit()
+        
+        if created_count > 0 or reset_count > 0:
+            print(f'  ✅ 处理完成: 创建 {created_count} 个, 重置 {reset_count} 个')
             print('  账号1: pc_yujiaqi')
             print('  账号2: pe_yujiaqi')
             print('  统一密码: Yun803163')
         else:
-            print('  ℹ️ 超级管理员已存在，跳过')
+            print('  ℹ️ 超级管理员已存在且状态正常，跳过')
         
         # 创建测试卡密（空状态）
         print('\n[3/4] 保持卡密为空状态...')
