@@ -12,7 +12,15 @@
 import sys
 import os
 import random
-from tqdm import tqdm  # 导入进度条库
+
+# 尝试导入 tqdm，如果不存在则使用简单的替代方案
+try:
+    from tqdm import tqdm
+except ImportError:
+    print('提示: 安装 tqdm 库可以看到进度条 (pip install tqdm)')
+    # 定义一个简单的替代类/函数，使得代码在没有 tqdm 时也能运行
+    def tqdm(iterable, **kwargs):
+        return iterable
 
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -83,16 +91,4 @@ def mock_stats():
         print('=' * 60)
 
 if __name__ == '__main__':
-    # 检查是否安装了 tqdm，如果没有则简单提示
-    try:
-        import tqdm
-    except ImportError:
-        print('提示: 安装 tqdm 库可以看到进度条 (pip install tqdm)')
-        # 定义一个简单的替代类，使得代码在没有 tqdm 时也能运行
-        class tqdm:
-            def __init__(self, iterable, **kwargs):
-                self.iterable = iterable
-            def __iter__(self):
-                return iter(self.iterable)
-    
     mock_stats()
