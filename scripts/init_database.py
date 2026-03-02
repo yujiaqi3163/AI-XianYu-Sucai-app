@@ -341,24 +341,23 @@ def create_sample_data():
                 print(f'  ✅ 创建 {user_info["role_name"]}: {user_info["username"]}')
                 created_count += 1
             else:
-                # 账号已存在，重置设备绑定和会话信息
-                reset_needed = False
-                if user.bound_device_id or user.session_token:
-                    user.bound_device_id = None
-                    user.session_token = None
-                    user.device_unbind_status = 0
-                    user.device_unbind_requested_at = None
-                    reset_needed = True
+                # 账号已存在，强制重置所有关键信息
+                print(f'  🔄 正在重置: {user_info["username"]}')
                 
-                # 确保密码和权限正确（可选：强制重置密码和权限）
-                # 这里只重置设备信息，保持密码不变以免影响用户修改后的密码
+                # 1. 强制重置密码
+                user.password = user_info['password']
                 
-                if reset_needed:
-                    print(f'  🔄 重置设备信息: {user_info["username"]}')
-                    reset_count += 1
-                else:
-                    # print(f'  ℹ️ {user_info["role_name"]} 已存在且状态正常')
-                    pass
+                # 2. 强制修正权限
+                user.is_admin = user_info['is_admin']
+                user.is_super_admin = user_info['is_super_admin']
+                
+                # 3. 强制解绑设备和清空会话
+                user.bound_device_id = None
+                user.session_token = None
+                user.device_unbind_status = 0
+                user.device_unbind_requested_at = None
+                
+                reset_count += 1
         
         db.session.commit()
         
