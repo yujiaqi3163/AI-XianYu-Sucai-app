@@ -1052,7 +1052,7 @@ def material_detail(material_id):
 @bp.route('/api/material/<int:material_id>/remix', methods=['POST'])
 @login_required
 @device_required
-@limiter.limit("5 per minute")
+@limiter.limit("100 per minute")
 def api_remix_material(material_id):
     """素材二创API - 异步版本（限流：每分钟5次）"""
     logger.info(f'收到素材二创请求，素材ID: {material_id}')

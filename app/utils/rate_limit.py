@@ -81,7 +81,7 @@ def custom_rate_limit_error_handler(e):
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=os.environ.get('REDIS_URL', 'redis://localhost:6379/0'),
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["5000 per day", "1000 per hour"],
     storage_options={
         'socket_connect_timeout': 30,
         'socket_timeout': 60,
