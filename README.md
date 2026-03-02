@@ -126,7 +126,12 @@ my_flask_app/
 
 ### 开发环境快速启动
 
+
 ```bash
+
+# 启动虚拟环境 
+.\venv\Scripts\Activate.ps1
+
 # 1. 复制环境变量
 cp .env.example .env
 # 然后编辑 .env，填入你的配置

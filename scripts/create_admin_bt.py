@@ -1,17 +1,19 @@
 # ============================================================
 # create_admin_bt.py
 # 
-# 宝塔服务器专用 - 创建超级管理员
+# 宝塔服务器专用 - 批量创建/更新账号脚本
 # 功能说明：
 # 1. 自动检测项目路径
 # 2. 更好的错误处理
 # 3. 详细的日志输出
+# 4. 创建 PE/PC 端各3个账号（超级管理员、管理员、普通用户）
 # ============================================================
 
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-宝塔服务器专用 - 创建超级管理员账号
+宝塔服务器专用 - 批量创建账号脚本
+包含 PC/PE 端的 Super/Admin/User 角色
 """
 
 import sys
@@ -23,7 +25,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 
 print('=' * 80)
-print('宝塔服务器 - 创建超级管理员')
+print('宝塔服务器 - 批量创建账号')
 print('=' * 80)
 print()
 print(f'脚本目录: {SCRIPT_DIR}')
@@ -62,8 +64,8 @@ except ImportError as e:
     sys.exit(1)
 
 
-def create_super_admins():
-    """创建超级管理员账号"""
+def create_users():
+    """创建指定账号"""
     print('正在初始化应用...')
     
     try:
@@ -78,130 +80,141 @@ def create_super_admins():
         print('应用初始化成功！')
         print()
         print('=' * 80)
-        print('创建超级管理员账号')
+        print('开始初始化 6 个标准账号')
         print('=' * 80)
         print()
         
-        # 定义要创建的超级管理员列表
-        super_admins = [
+        # 统一密码
+        common_password = 'yun123456.'
+        
+        # 定义要创建的用户列表
+        # 格式: (username, email, is_super_admin, is_admin)
+        users_to_create = [
+            # PE 端账号
             {
-                'username': 'pc_yujiaqi',
-                'email': '2798479668@qq.com',
-                'password': 'Yun803163'
+                'username': 'pe_yujiaqi_super',
+                'email': 'pe_super@example.com',
+                'password': common_password,
+                'is_super_admin': True,
+                'is_admin': True,
+                'role_name': 'PE 超级管理员'
             },
             {
-                'username': 'pe_yujiaqi',
-                'email': 'aa13178775196@163.com',
-                'password': 'Yun803163'
+                'username': 'pe_yujiaqi_admin',
+                'email': 'pe_admin@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': True,
+                'role_name': 'PE 管理员'
+            },
+            {
+                'username': 'pe_yujiaqi_user',
+                'email': 'pe_user@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': False,
+                'role_name': 'PE 普通用户'
+            },
+            
+            # PC 端账号
+            {
+                'username': 'pc_yujiaqi_super',
+                'email': 'pc_super@example.com',
+                'password': common_password,
+                'is_super_admin': True,
+                'is_admin': True,
+                'role_name': 'PC 超级管理员'
+            },
+            {
+                'username': 'pc_yujiaqi_admin',
+                'email': 'pc_admin@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': True,
+                'role_name': 'PC 管理员'
+            },
+            {
+                'username': 'pc_yujiaqi_user',
+                'email': 'pc_user@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': False,
+                'role_name': 'PC 普通用户'
             }
         ]
         
         created_count = 0
+        updated_count = 0
         skipped_count = 0
         
-        for admin_info in super_admins:
-            username = admin_info['username']
-            email = admin_info['email']
-            password = admin_info['password']
+        for user_info in users_to_create:
+            username = user_info['username']
+            email = user_info['email']
+            password = user_info['password']
+            is_super = user_info['is_super_admin']
+            is_admin = user_info['is_admin']
+            role_name = user_info['role_name']
+            
+            print(f'正在处理: {role_name} ({username}) ...')
             
             # 检查用户名是否已存在
-            existing_by_username = User.query.filter_by(username=username).first()
-            
-            if existing_by_username:
-                print(f'  ℹ️ 账号 "{username}" 已存在')
+            try:
+                user = User.query.filter_by(username=username).first()
                 
-                # 更新用户信息
-                existing_by_username.is_super_admin = True
-                existing_by_username.is_admin = True
-                existing_by_username.password = password
-                
-                # 如果邮箱不同，尝试更新邮箱
-                if existing_by_username.email != email:
-                    # 检查新邮箱是否被其他用户占用
+                if user:
+                    print(f'  ℹ️ 账号 "{username}" 已存在，正在更新权限和密码...')
+                    
+                    # 更新用户信息
+                    user.is_super_admin = is_super
+                    user.is_admin = is_admin
+                    user.password = password
+                    
+                    # 如果邮箱不同，尝试更新邮箱
+                    if user.email != email:
+                        # 检查新邮箱是否被其他用户占用
+                        existing_by_email = User.query.filter_by(email=email).first()
+                        if existing_by_email and existing_by_email.id != user.id:
+                            print(f'  ⚠️  邮箱 "{email}" 已被用户 "{existing_by_email.username}" 占用，跳过更新邮箱')
+                        else:
+                            old_email = user.email
+                            user.email = email
+                            print(f'  ✅ 更新邮箱: {old_email} → {email}')
+                    
+                    db.session.commit()
+                    print(f'  ✅ 更新成功')
+                    updated_count += 1
+                else:
+                    # 用户名不存在，检查邮箱是否已被占用
                     existing_by_email = User.query.filter_by(email=email).first()
-                    if existing_by_email and existing_by_email.id != existing_by_username.id:
-                        print(f'  ⚠️  邮箱 "{email}" 已被用户 "{existing_by_email.username}" 占用，跳过更新邮箱')
-                    else:
-                        old_email = existing_by_username.email
-                        existing_by_username.email = email
-                        print(f'  ✅ 更新邮箱: {old_email} → {email}')
+                    
+                    if existing_by_email:
+                        print(f'  ⚠️  邮箱 "{email}" 已被用户 "{existing_by_email.username}" 占用，跳过创建账号 "{username}"')
+                        skipped_count += 1
+                        continue
+                    
+                    # 创建新账号
+                    new_user = User(
+                        username=username,
+                        email=email,
+                        is_admin=is_admin,
+                        is_super_admin=is_super
+                    )
+                    new_user.password = password
+                    
+                    db.session.add(new_user)
+                    db.session.commit()
+                    print(f'  ✅ 创建成功')
+                    created_count += 1
+                    
+            except Exception as e:
+                print(f'  ❌ 处理账号 "{username}" 时出错: {e}')
+                db.session.rollback()
+                continue
                 
-                print(f'  ✅ 已更新 "{username}" 的密码和权限')
-                skipped_count += 1
-                continue
-            
-            # 用户名不存在，检查邮箱是否已被占用
-            existing_by_email = User.query.filter_by(email=email).first()
-            
-            if existing_by_email:
-                print(f'  ⚠️  邮箱 "{email}" 已被用户 "{existing_by_email.username}" 占用，跳过创建账号 "{username}"')
-                skipped_count += 1
-                continue
-            
-            # 用户名和邮箱都不存在，正常创建新账号
-            admin = User(
-                username=username,
-                email=email,
-                is_admin=True,
-                is_super_admin=True
-            )
-            admin.password = password
-            db.session.add(admin)
-            
-            print(f'  ✅ 创建超级管理员: {username}')
-            created_count += 1
-        
-        # 提交更改
-        try:
-            if created_count > 0 or skipped_count > 0:
-                db.session.commit()
-                print()
-                print('数据库提交成功！')
-        except Exception as e:
-            db.session.rollback()
-            print(f'❌ 数据库提交失败: {e}')
-            import traceback
-            traceback.print_exc()
-            sys.exit(1)
-        
         print()
         print('=' * 80)
-        print('账号信息:')
+        print(f'完成！新建: {created_count}, 更新: {updated_count}, 跳过: {skipped_count}')
         print('=' * 80)
         
-        for admin_info in super_admins:
-            print(f'  账号: {admin_info["username"]}')
-            print(f'  邮箱: {admin_info["email"]}')
-            print(f'  密码: {admin_info["password"]}')
-            print()
-        
-        print('=' * 80)
-        if created_count > 0:
-            print(f'🎉 完成！共创建 {created_count} 个新账号')
-        if skipped_count > 0:
-            print(f'  更新/跳过 {skipped_count} 个已存在的账号')
-        print('=' * 80)
-        
-        return True
-
-
 if __name__ == '__main__':
-    print()
-    print('⚠️  注意：此脚本不会清除任何现有数据！')
-    print()
-    
-    # 在宝塔服务器上，直接执行，不需要交互确认
-    try:
-        success = create_super_admins()
-        if success:
-            print()
-            print('✅ 脚本执行成功！')
-            sys.exit(0)
-        else:
-            sys.exit(1)
-    except Exception as e:
-        print()
-        print(f'❌ 出错: {e}')
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    create_users()

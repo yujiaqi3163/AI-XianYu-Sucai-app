@@ -4,8 +4,8 @@
   "description": "Flask app with Tailwind CSS",
   "main": "app.py",
   "scripts": {
-    "build": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css",
-    "watch": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css --watch"
+    "build": "tailwindcss -i ./app/static/src/input.css -o ./app/static/css/output.css",
+    "watch": "tailwindcss -i ./app/static/src/input.css -o ./app/static/css/output.css --watch"
   },
   "keywords": [],
   "author": "",
