@@ -143,9 +143,9 @@ def create_app(config_class=Config):
     from app.utils.rate_limit import init_limiter
     init_limiter(app)
     
-    # 全局设备锁验证中间件
+    # 全局安全策略验证中间件（设备锁 + 顶号检测）
     @app.before_request
-    def check_device_lock():
+    def check_security_policies():
         skip_paths = [
             '/auth/login',
             '/auth/register',
@@ -161,10 +161,32 @@ def create_app(config_class=Config):
                 return
         
         if current_user.is_authenticated:
+            # 1. 顶号检测：检查会话令牌是否一致（即便超级管理员也需要受此安全限制）
+            if current_user.session_token:
+                current_token = session.get('session_token')
+                if current_token != current_user.session_token:
+                    from flask_login import logout_user
+                    logout_user()
+                    session.clear()
+                    
+                    msg = '您的账号已在其他设备登录，您已被强制下线'
+                    
+                    if request.path.startswith('/api/'):
+                        return jsonify({'success': False, 'message': msg, 'code': 401}), 401
+                    else:
+                        flash(msg, 'warning')
+                        return redirect(url_for('auth.login'))
+
+            # 超级管理员跳过设备一致性检测
             if current_user.is_super_admin:
                 return
-            
+
+            # 2. 设备一致性检测
             session_device_id = session.get('device_id')
+            # 尝试从Header获取（API请求可能带Header但不带Cookie）
+            if not session_device_id:
+                session_device_id = request.headers.get('X-Device-ID')
+            
             if not session_device_id:
                 session_device_id = request.cookies.get('device_id')
                 if session_device_id:

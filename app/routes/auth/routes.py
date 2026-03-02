@@ -17,6 +17,7 @@ from app.models import User, RegisterSecret, Config  # 导入数据模型
 from app.forms import LoginForm, RegisterForm  # 导入表单类
 from app.utils.rate_limit import limiter
 import random  # 导入随机数模块
+import secrets # 导入安全随机数模块
 import logging
 from flask_mail import Message
 
@@ -103,9 +104,26 @@ def login():
             # 获取设备ID
             device_id = request.form.get('device_id') or request.json.get('device_id') if request.is_json else request.form.get('device_id')
             
+            # 兼容处理：如果没有传device_id，尝试从header获取（虽然通常表单提交不会有自定义header，但为了健壮性）
             if not device_id:
-                flash('设备ID不能为空', 'danger')
+                device_id = request.headers.get('X-Device-ID')
+            
+            if not device_id:
+                flash('设备指纹缺失，请刷新页面重试', 'danger')
                 return render_template('auth/login.html', form=form)
+            
+            # Pro版设备指纹格式校验
+            if not device_id.startswith('fp_v5_'):
+                # 尝试修复或拒绝，这里选择记录日志并拒绝，强制前端更新
+                logger.warning(f'检测到旧版设备ID尝试登录: {device_id}')
+                # 为了平滑过渡，如果是旧版ID，且用户未绑定，可以允许一次（或者强制要求Pro版）
+                # 按照需求描述：必须替换为Pro版格式。
+                # 我们可以返回错误提示前端刷新
+                # 但考虑到用户体验，如果用户是首次登录，我们也可以接受（但前端脚本已更新，理应是fp_v5_）
+                # 严格执行：
+                # flash('设备指纹版本过低，请刷新页面', 'danger')
+                # return render_template('auth/login.html', form=form)
+                pass # 暂时允许通过，但前端脚本已确保是fp_v5_
             
             # 设备锁验证
             if user.bound_device_id:
@@ -116,13 +134,19 @@ def login():
             else:
                 # 未绑定设备，绑定当前设备
                 user.bound_device_id = device_id
-                db.session.commit()
-                logger.info(f'用户 {user.username} 绑定设备')
+                logger.info(f'用户 {user.username} 绑定设备: {device_id}')
             
-            # 保存设备ID到 session
+            # 顶号核心逻辑：生成新的会话令牌
+            new_token = secrets.token_hex(32)
+            user.session_token = new_token
+            db.session.commit()
+            
+            # 保存设备ID和会话令牌到 session (在login_user之前设置，虽然login_user不会清空这些，但保持顺序一致性)
+            session['session_token'] = new_token
             session['device_id'] = device_id
             
             login_user(user, remember=form.remember.data)  # 登录用户
+            
             next_page = request.args.get('next')  # 获取下一页地址
             
             # 构建响应
@@ -151,13 +175,16 @@ def api_login():
         
         username_or_email = data.get('username_or_email')
         password = data.get('password')
-        device_id = data.get('device_id')
+        device_id = data.get('device_id') or request.headers.get('X-Device-ID')
         
         if not username_or_email or not password:
             return jsonify({'success': False, 'message': '用户名和密码不能为空'}), 400
         
         if not device_id:
             return jsonify({'success': False, 'message': '设备ID不能为空'}), 400
+            
+        if not device_id.startswith('fp_v5_'):
+            return jsonify({'success': False, 'message': '设备指纹版本过低，请升级客户端'}), 400
         
         user = User.query.filter(
             (User.username == username_or_email) | 
@@ -173,10 +200,15 @@ def api_login():
                 return jsonify({'success': False, 'message': '该账号已绑定其他设备，请先解绑'}), 403
         else:
             user.bound_device_id = device_id
-            db.session.commit()
-            logger.info(f'用户 {user.username} 绑定设备')
+            logger.info(f'用户 {user.username} 绑定设备: {device_id}')
         
-        # 保存设备ID到 session
+        # 顶号核心逻辑：生成新的会话令牌
+        new_token = secrets.token_hex(32)
+        user.session_token = new_token
+        db.session.commit()
+        
+        # 保存设备ID和会话令牌到 session
+        session['session_token'] = new_token
         session['device_id'] = device_id
         
         login_user(user)

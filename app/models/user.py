@@ -48,6 +48,9 @@ class User(UserMixin, db.Model):
     # 绑定的设备ID
     bound_device_id = db.Column(db.String(200), nullable=True)
     
+    # 当前会话令牌
+    session_token = db.Column(db.String(64), nullable=True, index=True)
+    
     # 设备解绑状态：0-正常，1-申请中
     device_unbind_status = db.Column(db.Integer, default=0, nullable=False)
     

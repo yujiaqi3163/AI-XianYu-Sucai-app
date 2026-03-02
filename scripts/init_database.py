@@ -117,13 +117,20 @@ def migrate_device_lock():
         inspector = db.inspect(db.engine)
         columns = [col['name'] for col in inspector.get_columns('users')]
         
-        if 'bound_device_id' not in columns:
-            with db.engine.connect() as conn:
+        with db.engine.connect() as conn:
+            if 'bound_device_id' not in columns:
                 conn.execute(db.text('ALTER TABLE users ADD COLUMN bound_device_id VARCHAR(200)'))
-                conn.commit()
-            print('  ✅ 添加 bound_device_id 列')
-        else:
-            print('  ℹ️ bound_device_id 已存在')
+                print('  ✅ 添加 bound_device_id 列')
+            
+            if 'session_token' not in columns:
+                conn.execute(db.text('ALTER TABLE users ADD COLUMN session_token VARCHAR(64)'))
+                conn.execute(db.text('CREATE INDEX ix_users_session_token ON users (session_token)'))
+                print('  ✅ 添加 session_token 列及索引')
+                
+            conn.commit()
+            
+        if 'bound_device_id' in columns and 'session_token' in columns:
+            print('  ℹ️ 设备锁字段已存在')
     except Exception as e:
         print(f'  ℹ️ 设备锁迁移跳过: {e}')
 
@@ -296,6 +303,8 @@ if __name__ == '__main__':
         success = init_database()
         if success:
             create_sample_data()
+    elif len(sys.argv) > 1 and sys.argv[1] == '-y':
+        init_database()
     else:
         print('使用方法:')
         print('  python scripts/init_database.py          # 仅初始化数据库')

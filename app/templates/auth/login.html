@@ -146,19 +146,18 @@
     </div>
 
     <!-- 消息自动消失和设备ID生成脚本 -->
+    <script src="/static/js/device_fingerprint.js"></script>
     <script>
         // 生成或获取设备ID
         function getDeviceId() {
-            let deviceId = localStorage.getItem('device_id');
+            if (window.DeviceFingerprint) {
+                return window.DeviceFingerprint.getDeviceId();
+            }
+            // Fallback
+            let deviceId = localStorage.getItem('device_fingerprint_v5');
             if (!deviceId) {
-                // 生成新的设备ID
-                const timestamp = Date.now().toString(36);
-                const random = Math.random().toString(36).substring(2, 15);
-                deviceId = timestamp + '_' + random;
-                localStorage.setItem('device_id', deviceId);
-                console.log('✅ 新设备ID生成:', deviceId);
-            } else {
-                console.log('✅ 使用现有设备ID:', deviceId);
+                 deviceId = 'fp_v5_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
+                 localStorage.setItem('device_fingerprint_v5', deviceId);
             }
             return deviceId;
         }
@@ -167,7 +166,9 @@
             // 设置设备ID
             const deviceIdInput = document.getElementById('device-id');
             if (deviceIdInput) {
-                deviceIdInput.value = getDeviceId();
+                const deviceId = getDeviceId();
+                deviceIdInput.value = deviceId;
+                console.log('✅ Pro设备指纹:', deviceId);
             }
             
             // 消息自动消失

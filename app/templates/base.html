@@ -293,6 +293,7 @@
         </div>
     </div>
 
+    <script src="/static/js/device_fingerprint.js"></script>
     <script>
         // 从后端获取的公告数据
         const announcements = [
@@ -311,19 +312,37 @@
 
         // 生成或获取设备ID
         function getDeviceId() {
-            let deviceId = localStorage.getItem('device_id');
+            if (window.DeviceFingerprint) {
+                return window.DeviceFingerprint.getDeviceId();
+            }
+            // Fallback
+            let deviceId = localStorage.getItem('device_fingerprint_v5');
             if (!deviceId) {
-                // 生成新的设备ID
-                const timestamp = Date.now().toString(36);
-                const random = Math.random().toString(36).substring(2, 15);
-                deviceId = timestamp + '_' + random;
-                localStorage.setItem('device_id', deviceId);
-                console.log('✅ 新设备ID生成:', deviceId);
-            } else {
-                console.log('✅ 使用现有设备ID:', deviceId);
+                 deviceId = 'fp_v5_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
+                 localStorage.setItem('device_fingerprint_v5', deviceId);
             }
             return deviceId;
         }
+
+        // 全局 AJAX 请求头中添加 X-Device-ID
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+                options = options || {};
+                options.headers = options.headers || {};
+                options.headers['X-Device-ID'] = getDeviceId();
+                return originalFetch(url, options);
+            };
+            
+            // 如果使用 XMLHttpRequest
+            const originalXHR = window.XMLHttpRequest.prototype.open;
+            window.XMLHttpRequest.prototype.open = function() {
+                this.addEventListener('loadstart', function() {
+                    this.setRequestHeader('X-Device-ID', getDeviceId());
+                });
+                return originalXHR.apply(this, arguments);
+            };
+        })();
 
         // 保存设备ID到服务器session
         async function saveDeviceIdToSession() {
@@ -338,10 +357,10 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    console.log('✅ 设备ID已保存到session');
+                    console.log('✅ Pro设备指纹已保存到session');
                 }
             } catch (error) {
-                console.log('❌ 保存设备ID失败:', error);
+                console.log('❌ 保存设备指纹失败:', error);
             }
         }
 
