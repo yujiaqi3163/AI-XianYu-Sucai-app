@@ -257,49 +257,128 @@ def create_sample_data():
         else:
             print('  ℹ️ 分类已存在，跳过')
         
-        # 创建超级管理员
-        print('\n[2/4] 创建超级管理员...')
+        # 创建/初始化标准账号
+        print('\n[2/4] 初始化 6 个标准账号...')
         
-        # 定义要创建的超级管理员列表
-        super_admins = [
-            {'username': 'pc_yujiaqi', 'email': '2798479668@qq.com'},
-            {'username': 'pe_yujiaqi', 'email': 'aa13178775196@163.com'}
+        # 统一密码
+        common_password = 'yun123456.'
+        
+        # 定义要创建的用户列表
+        # 格式: (username, email, is_super_admin, is_admin)
+        users_to_create = [
+            # PE 端账号
+            {
+                'username': 'pe_yujiaqi_super',
+                'email': 'pe_super@example.com',
+                'password': common_password,
+                'is_super_admin': True,
+                'is_admin': True,
+                'role_name': 'PE 超级管理员'
+            },
+            {
+                'username': 'pe_yujiaqi_admin',
+                'email': 'pe_admin@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': True,
+                'role_name': 'PE 管理员'
+            },
+            {
+                'username': 'pe_yujiaqi_user',
+                'email': 'pe_user@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': False,
+                'role_name': 'PE 普通用户'
+            },
+            
+            # PC 端账号
+            {
+                'username': 'pc_yujiaqi_super',
+                'email': 'pc_super@example.com',
+                'password': common_password,
+                'is_super_admin': True,
+                'is_admin': True,
+                'role_name': 'PC 超级管理员'
+            },
+            {
+                'username': 'pc_yujiaqi_admin',
+                'email': 'pc_admin@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': True,
+                'role_name': 'PC 管理员'
+            },
+            {
+                'username': 'pc_yujiaqi_user',
+                'email': 'pc_user@example.com',
+                'password': common_password,
+                'is_super_admin': False,
+                'is_admin': False,
+                'role_name': 'PC 普通用户'
+            }
         ]
         
         created_count = 0
         reset_count = 0
-        for admin_info in super_admins:
-            admin = User.query.filter_by(username=admin_info['username']).first()
-            if not admin:
-                admin = User(
-                    username=admin_info['username'],
-                    email=admin_info['email'],
-                    is_admin=True,
-                    is_super_admin=True
+        
+        for user_info in users_to_create:
+            user = User.query.filter_by(username=user_info['username']).first()
+            if not user:
+                # 检查邮箱是否已被使用
+                if User.query.filter_by(email=user_info['email']).first():
+                    print(f'  ⚠️ 邮箱 {user_info["email"]} 已被其他用户使用，跳过创建 {user_info["username"]}')
+                    continue
+                    
+                user = User(
+                    username=user_info['username'],
+                    email=user_info['email'],
+                    is_admin=user_info['is_admin'],
+                    is_super_admin=user_info['is_super_admin']
                 )
-                admin.password = 'Yun803163'
-                db.session.add(admin)
-                print(f'  ✅ 创建超级管理员: {admin_info["username"]}')
+                user.password = user_info['password']
+                db.session.add(user)
+                print(f'  ✅ 创建 {user_info["role_name"]}: {user_info["username"]}')
                 created_count += 1
             else:
-                # 如果管理员已存在，重置设备绑定和会话信息
-                if admin.bound_device_id or admin.session_token:
-                    admin.bound_device_id = None
-                    admin.session_token = None
-                    admin.device_unbind_status = 0
-                    admin.device_unbind_requested_at = None
-                    print(f'  🔄 重置管理员设备信息: {admin_info["username"]}')
+                # 账号已存在，重置设备绑定和会话信息
+                reset_needed = False
+                if user.bound_device_id or user.session_token:
+                    user.bound_device_id = None
+                    user.session_token = None
+                    user.device_unbind_status = 0
+                    user.device_unbind_requested_at = None
+                    reset_needed = True
+                
+                # 确保密码和权限正确（可选：强制重置密码和权限）
+                # 这里只重置设备信息，保持密码不变以免影响用户修改后的密码
+                
+                if reset_needed:
+                    print(f'  🔄 重置设备信息: {user_info["username"]}')
                     reset_count += 1
+                else:
+                    # print(f'  ℹ️ {user_info["role_name"]} 已存在且状态正常')
+                    pass
         
         db.session.commit()
         
         if created_count > 0 or reset_count > 0:
             print(f'  ✅ 处理完成: 创建 {created_count} 个, 重置 {reset_count} 个')
-            print('  账号1: pc_yujiaqi')
-            print('  账号2: pe_yujiaqi')
-            print('  统一密码: Yun803163')
         else:
-            print('  ℹ️ 超级管理员已存在且状态正常，跳过')
+            print('  ℹ️ 所有标准账号已存在且状态正常')
+            
+        print('\n  [账号清单]')
+        print(f'  统一密码: {common_password}')
+        print('  ----------------------------------------')
+        print('  PE端:')
+        print('    超级管理员: pe_yujiaqi_super')
+        print('    管理员:     pe_yujiaqi_admin')
+        print('    普通用户:   pe_yujiaqi_user')
+        print('  ----------------------------------------')
+        print('  PC端:')
+        print('    超级管理员: pc_yujiaqi_super')
+        print('    管理员:     pc_yujiaqi_admin')
+        print('    普通用户:   pc_yujiaqi_user')
         
         # 创建测试卡密（空状态）
         print('\n[3/4] 保持卡密为空状态...')
