@@ -266,56 +266,59 @@ def create_sample_data():
         # 定义要创建的用户列表
         # 格式: (username, email, is_super_admin, is_admin)
         users_to_create = [
-            # PE 端账号
-            {
-                'username': 'pe_yujiaqi_super',
-                'email': 'pe_super@example.com',
-                'password': common_password,
-                'is_super_admin': True,
-                'is_admin': True,
-                'role_name': 'PE 超级管理员'
-            },
-            {
-                'username': 'pe_yujiaqi_admin',
-                'email': 'pe_admin@example.com',
-                'password': common_password,
-                'is_super_admin': False,
-                'is_admin': True,
-                'role_name': 'PE 管理员'
-            },
-            {
-                'username': 'pe_yujiaqi_user',
-                'email': 'pe_user@example.com',
-                'password': common_password,
-                'is_super_admin': False,
-                'is_admin': False,
-                'role_name': 'PE 普通用户'
-            },
-            
-            # PC 端账号
+            # 超级管理员 (PC)
             {
                 'username': 'pc_yujiaqi_super',
-                'email': 'pc_super@example.com',
-                'password': common_password,
+                'role_name': 'PC 超级管理员',
+                'email': 'pc_yujiaqi_super@qq.com',
                 'is_super_admin': True,
                 'is_admin': True,
-                'role_name': 'PC 超级管理员'
+                'password': common_password
             },
+            # 超级管理员 (PE)
+            {
+                'username': 'pe_yujiaqi_super',
+                'role_name': 'PE 超级管理员',
+                'email': 'pe_yujiaqi_super@qq.com',
+                'is_super_admin': True,
+                'is_admin': True,
+                'password': common_password
+            },
+            # 管理员 (PC)
             {
                 'username': 'pc_yujiaqi_admin',
-                'email': 'pc_admin@example.com',
-                'password': common_password,
+                'role_name': 'PC 管理员',
+                'email': 'pc_yujiaqi_admin@qq.com',
                 'is_super_admin': False,
                 'is_admin': True,
-                'role_name': 'PC 管理员'
+                'password': common_password
             },
+            # 管理员 (PE)
+            {
+                'username': 'pe_yujiaqi_admin',
+                'role_name': 'PE 管理员',
+                'email': 'pe_yujiaqi_admin@qq.com',
+                'is_super_admin': False,
+                'is_admin': True,
+                'password': common_password
+            },
+            # 普通用户 (PC)
             {
                 'username': 'pc_yujiaqi_user',
-                'email': 'pc_user@example.com',
-                'password': common_password,
+                'role_name': 'PC 普通用户',
+                'email': 'pc_yujiaqi_user@qq.com',
                 'is_super_admin': False,
                 'is_admin': False,
-                'role_name': 'PC 普通用户'
+                'password': common_password
+            },
+            # 普通用户 (PE)
+            {
+                'username': 'pe_yujiaqi_user',
+                'role_name': 'PE 普通用户',
+                'email': 'pe_yujiaqi_user@qq.com',
+                'is_super_admin': False,
+                'is_admin': False,
+                'password': common_password
             }
         ]
         
